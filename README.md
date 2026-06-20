@@ -1,11 +1,36 @@
 # segment-anything-2 real-time
 Run Segment Anything Model 2 on a **live video stream**
 
-# TYLER DOCUMENTATION (June 1, 2025)
+## ROS2 Port (by Hyomuk Kim)
+
+This fork ports `sam2_ros_node.py` from ROS1 (rospy) to ROS2 (rclpy),
+for use with the ROS2-based Object-Informed MPPI pipeline.
+
+### What changed
+- `sam2_ros_node.py`: ported rospy → rclpy (Node class, timer-based loop,
+  ROS2 parameters). Publishes `/sam2_mask` as before.
+- Prompt method is now a ROS2 parameter `prompt_method` (default:
+  `user_select`, i.e. click once on the object). The text/mesh methods
+  (Grounding DINO / GPT-4o) are kept but their heavy imports are deferred
+  into the functions that use them, so the node runs without those
+  dependencies installed.
+- `sam2_model.py` is unchanged (pure SAM2 wrapper, no ROS dependency).
+
+### Run (ROS2)
+```bash
+# default: click once on the object to start tracking
+python3 sam2_ros_node.py --ros-args -p camera:=realsense
+
+# later, text prompt (requires Grounding DINO installed):
+python3 sam2_ros_node.py --ros-args -p camera:=realsense \
+    -p prompt_method:=text -p text_prompt:="tomato soup can"
+```
+
+## TYLER DOCUMENTATION (June 1, 2025)
 
 NOTE: The purpose of this documentation is NOT to be super precise and detailed, but rather to be a quick reference for how to run the code and how it works.
 
-## EXAMPLE VIDEO
+### EXAMPLE VIDEO
 
 This is an example that demonstrates the robustness of the Segment Anything Model 2 (SAM2) model (very robust).
 
@@ -15,7 +40,7 @@ This video shows SAM2 working at ~30Hz.
 
 [SAM2_Robust_Screencast from 09-08-2024 07:07:12 PM.webm](https://github.com/user-attachments/assets/95849300-c1b2-47e9-8ca9-8344fb7e2e46)
 
-## INPUTS AND OUTPUTS
+### INPUTS AND OUTPUTS
 
 ```mermaid
 flowchart LR
@@ -68,7 +93,7 @@ elif camera == "realsense":
     self.image_sub_topic = "/camera/color/image_raw"
 ```
 
-## CHANGES
+### CHANGES
 Difference between the default SAM2 (https://github.com/facebookresearch/segment-anything-2) and real-time SAM2 (https://github.com/Gy920/segment-anything-2-real-time):
 
 * Creates `sam2_camera_predictor.py`, which is nearly identical to `sam2_video_predictor.py`, but doesn't read in all frames at once from a file, but predict sequentially on new images

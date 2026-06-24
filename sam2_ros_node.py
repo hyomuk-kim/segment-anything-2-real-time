@@ -28,6 +28,9 @@ from sensor_msgs.msg import Image as ROSImage
 
 from sam2_model import SAM2Model
 
+import os
+os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
+
 
 def rgb_to_pil(rgb_image: np.ndarray) -> Image.Image:
     return Image.fromarray(rgb_image)

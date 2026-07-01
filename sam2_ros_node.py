@@ -135,8 +135,14 @@ class SAM2RosNode(Node):
         self.num_mask_pixels_pub = self.create_publisher(
             Int32, "/sam2_num_mask_pixels", 1)
 
-        # Main loop at 1 Hz (matches original; SAM2 tracking itself is faster)
-        self.timer = self.create_timer(1.0, self.run_once)
+        # Loop frequency selection (default: 5.0 Hz)
+        self.declare_parameter("frequency", 5.0)
+        freq = self.get_parameter("frequency").get_parameter_value().double_value
+        timer_period = 1.0 / freq
+        self.get_logger().info(f"SAM2 ROS2 node ready, running at {freq} Hz...")
+
+        # Main loop triggered by timer
+        self.timer = self.create_timer(timer_period, self.run_once)
         self.get_logger().info("SAM2 ROS2 node ready, waiting for images...")
 
     # ---------- callbacks ----------
